@@ -21,43 +21,44 @@ export default {
   },
   data() {
     return {
-      products: [
-        {
-          id: 1,
-          categoryId: 1,
-          productName: "iPhone 6S",
-          quantityPerUnit: "Apple Mobile Phone",
-          unitPrice: 15000,
-          unitsInStock: 10,
-        },
-        {
-          id: 2,
-          categoryId: 1,
-          productName: "Samsung Galaxy Tab E",
-          quantityPerUnit: "Samsung Tablet",
-          unitPrice: 4500,
-          unitsInStock: 5,
-        },
-        {
-          id: 3,
-          categoryId: 2,
-          productName: "Xiaomi Mi Band 5",
-          quantityPerUnit: "Xiaomi Watch",
-          unitPrice: 1250,
-          unitsInStock: 20,
-        },
-      ],
+      products: [],
     };
   },
+  created() {
+    this.getProducts();
+  },
   methods: {
-    deleteProduct(product) {
+    async getProducts() {
+      const result = await fetch('http://localhost:3000/products');
+      const data = await result.json();
+      this.products = data;
+    },
+    async deleteProduct(product) {
+      await fetch('http://localhost:3000/products/' + product.id, {
+        method: "DELETE",
+      });
       this.products = this.products.filter(
         (productToFilter) => productToFilter.id !== product.id
       );
     },
-    updateProduct() {},
-    addProduct(product) {
-      const newProduct = { ...product };
+    async updateProduct(product) {
+      const result = await fetch('http://localhost:3000/products/' + product.id , {
+        method: "PUT",
+        body: JSON.stringify(product),
+        headers: { "Content-Type": "application/json" },
+      });
+
+      const updatedProduct = await result.json();
+
+      this.products = this.products.map(product => product.id === updatedProduct ? updatedProduct : product);
+    },
+    async addProduct(product) {
+      const result = await fetch('http://localhost:3000/products', {
+        method: "POST",
+        body: JSON.stringify(product),
+        headers: { "Content-Type": "application/json" },
+      });
+      const newProduct = await result.json();
       this.products = [...this.products, newProduct];
     },
   },
@@ -75,7 +76,7 @@ export default {
 
 h1 {
   margin-bottom: 0;
-  text-align:center;
+  text-align: center;
   padding: 1em;
   color: #fff;
 }
